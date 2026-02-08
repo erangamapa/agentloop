@@ -1,0 +1,29 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: agentloop
+      - uses: actions/checkout@v4
+        with:
+          repository: erangamapa/sportsbook-contracts
+          path: sportsbook-contracts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agentloop/package-lock.json
+      - run: npm ci
+        working-directory: sportsbook-contracts/packages/ts
+      - run: npm ci
+        working-directory: agentloop
+      - run: npm run typecheck
+        working-directory: agentloop
+      - run: npm test
+        working-directory: agentloop
