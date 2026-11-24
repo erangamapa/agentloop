@@ -1,6 +1,6 @@
 # agentloop
 
-A small TypeScript harness for running LLM agents, built on LangGraph.js. It is the loop the rest of my sportsbook agent platform runs inside.
+A small TypeScript harness for running LLM agents safely, built on LangGraph.js. It gives an agent loop scoped tools, hard budgets, human approval gates and model routing, all enforced in code instead of in the prompt. I built it for a sportsbook agent platform, and that platform is the worked example below.
 
 ## What this is
 
@@ -8,7 +8,7 @@ The idea is simple. The model is a stateless, rented reasoning step. It does not
 
 So agentloop never asks the model to behave. It checks what the model proposes, and it stops the run itself. Two exits always exist. The model finishes, or a budget trips. I never trust the model to stop on its own.
 
-Consumers import `createHarness`, pass in their own tools and policies, and run it. The persona fleet and the VIP concierge service both work this way.
+Consumers import `createHarness`, pass in their own tools and policies, and run it. In my case the persona fleet (pulse-agents) and the VIP concierge service (pulse-vip-concierge) both work this way.
 
 ## The loop
 
@@ -69,6 +69,8 @@ LANGCHAIN_API_KEY=<langsmith-api-key>
 
 ## How consumers use it
 
+The example is the VIP concierge from the sportsbook platform. Swap in your own role, tools and prompt.
+
 ```ts
 import { z } from 'zod';
 import { MemorySaver } from '@langchain/langgraph';
@@ -114,11 +116,14 @@ The default checkpointer is in memory. Pass a durable one in production.
 
 Tests run with no network and no keys. Model clients are injected, and the tests use `ScriptedModel`, a fake chat model that replays a list of messages with tool calls. The deterministic parts are covered directly. That means scope enforcement, proposal validation, budgets (with an injected clock), the interrupt gate with a `MemorySaver`, router policy and fallback, PII masking and context pruning.
 
-The contracts package is a sibling file dependency, so clone sportsbook-contracts next to this repo before installing. Tests and typecheck read its source directly, so it does not need a build step.
+The contracts package (`sportsbook-contracts`) is a git dependency pinned to a release tag. `npm install` builds it through its own `prepare` script, so a lone clone is enough.
 
 ```
-git clone https://github.com/erangamapa/sportsbook-contracts ../sportsbook-contracts
+git clone https://github.com/erangamapa/agentloop
+cd agentloop
 npm install
 npm run typecheck
 npm test
 ```
+
+It is used only for the `Actor` type and in one test. The loop itself does not depend on the sportsbook domain.
