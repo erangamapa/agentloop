@@ -10,10 +10,7 @@
     "declaration": true,
     "outDir": "dist",
     "skipLibCheck": true,
-    "types": ["node"],
-    "paths": {
-      "sportsbook-contracts": ["../sportsbook-contracts/packages/ts/src/index.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src", "tests", "vitest.config.ts"]
 }
